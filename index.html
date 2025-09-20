@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFO Helper Dynamic - Financial Scenario Planning</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <h1>CFO Helper Dynamic</h1>
+                    <div class="usage-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Scenarios Tested:</span>
+                            <span id="scenarios-count" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Reports Generated:</span>
+                            <span id="reports-count" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Session Cost:</span>
+                            <span id="session-cost" class="stat-value">₹0</span>
+                        </div>
+                        <button id="refresh-data" class="btn btn--outline btn--sm">Refresh Data</button>
+                        <button id="reset-counters" class="btn btn--secondary btn--sm">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content container">
+            <div class="dashboard-layout">
+                <!-- Company Profile Sidebar -->
+                <aside class="company-profile">
+                    <!-- Company Summary - Always Visible -->
+                    <div class="card profile-summary-card">
+                        <div class="card__header">
+                            <h3>Company Profile</h3>
+                            <div class="profile-header-actions">
+                                <div class="status status--success" id="data-status">Live Data</div>
+                                <button id="edit-profile-btn" class="btn btn--secondary btn--sm">Edit Profile</button>
+                            </div>
+                        </div>
+                        
+                        <div class="card__body">
+                            <!-- Key Metrics Summary - Always Visible -->
+                            <div class="profile-summary">
+                                <div class="profile-item">
+                                    <span class="profile-label">Company:</span>
+                                    <span class="profile-value" id="company-name">Sample Startup</span>
+                                </div>
+                                <div class="profile-item runway-item">
+                                    <span class="profile-label">Runway:</span>
+                                    <span class="profile-value runway-value" id="runway-months">12 months</span>
+                                </div>
+                                <div class="profile-item">
+                                    <span class="profile-label">Monthly Burn:</span>
+                                    <span class="profile-value" id="monthly-burn">₹50,000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Information Section - Collapsible -->
+                    <div class="card profile-section-card">
+                        <div class="profile-section__header" data-section="basic">
+                            <h4>Basic Information</h4>
+                            <button class="section-toggle" aria-expanded="false">
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                        </div>
+                        <div class="profile-section__content" id="basic-section">
+                            <!-- View Mode -->
+                            <div id="basic-view-mode" class="section-view-mode">
+                                <div class="profile-item">
+                                    <span class="profile-label">Current Cash:</span>
+                                    <span class="profile-value" id="current-cash">₹6,00,000</span>
+                                </div>
+                                <div class="profile-item">
+                                    <span class="profile-label">Monthly Revenue:</span>
+                                    <span class="profile-value" id="monthly-revenue">₹30,000</span>
+                                </div>
+                                <div class="profile-item">
+                                    <span class="profile-label">Employees:</span>
+                                    <span class="profile-value" id="employees">5</span>
+                                </div>
+                                <div class="profile-item">
+                                    <span class="profile-label">Product Price:</span>
+                                    <span class="profile-value" id="product-price">₹99</span>
+                                </div>
+                            </div>
+
+                            <!-- Edit Mode -->
+                            <div id="basic-edit-mode" class="section-edit-mode hidden">
+                                <div class="form-group">
+                                    <label class="form-label" for="edit-company-name">Company Name</label>
+                                    <input type="text" id="edit-company-name" class="form-control" value="Sample Startup">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="edit-current-cash">Current Cash Position (₹)</label>
+                                    <input type="number" id="edit-current-cash" class="form-control" value="600000" min="0" step="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="edit-monthly-revenue">Monthly Revenue (₹)</label>
+                                    <input type="number" id="edit-monthly-revenue" class="form-control" value="30000" min="0" step="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="edit-employees">Number of Employees</label>
+                                    <input type="number" id="edit-employees" class="form-control" value="5" min="1" max="10000">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="edit-product-price">Product Price (₹)</label>
+                                    <input type="number" id="edit-product-price" class="form-control" value="99" min="1" step="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expenses Management Section - Collapsible -->
+                    <div class="card profile-section-card">
+                        <div class="profile-section__header" data-section="expenses">
+                            <h4>Expenses Management</h4>
+                            <button class="section-toggle" aria-expanded="false">
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                        </div>
+                        <div class="profile-section__content" id="expenses-section">
+                            <!-- View Mode -->
+                            <div id="expenses-view-mode" class="section-view-mode">
+                                <div id="expenses-summary-list" class="expenses-summary-list">
+                                    <!-- Expenses summary will be populated here -->
+                                </div>
+                                <div class="expenses-show-more">
+                                    <button id="show-all-expenses-btn" class="btn btn--outline btn--sm">Show All Expenses</button>
+                                </div>
+                            </div>
+
+                            <!-- Edit Mode -->
+                            <div id="expenses-edit-mode" class="section-edit-mode hidden">
+                                <div class="expenses-header">
+                                    <button id="add-expense-btn" class="btn btn--primary btn--sm">Add Expense</button>
+                                </div>
+                                <div id="expenses-list" class="expenses-list">
+                                    <!-- Expenses will be populated here -->
+                                </div>
+                                <div class="expenses-summary">
+                                    <div class="profile-item">
+                                        <span class="profile-label">Total Monthly Burn:</span>
+                                        <span class="profile-value" id="edit-total-burn">₹50,000</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Templates Section - Collapsible -->
+                    <div class="card profile-section-card">
+                        <div class="profile-section__header" data-section="templates">
+                            <h4>Business Templates</h4>
+                            <button class="section-toggle" aria-expanded="false">
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                        </div>
+                        <div class="profile-section__content" id="templates-section">
+                            <p class="template-description">Choose a template to quickly populate your company data:</p>
+                            <div class="template-options">
+                                <div class="template-card" data-template="tech_startup">
+                                    <h5>Tech Startup</h5>
+                                    <p>₹5,00,000 cash, 8 employees, focused on engineering and growth</p>
+                                    <button class="btn btn--outline btn--sm">Use Template</button>
+                                </div>
+                                <div class="template-card" data-template="small_business">
+                                    <h5>Small Business</h5>
+                                    <p>₹1,50,000 cash, 3 employees, traditional business model</p>
+                                    <button class="btn btn--outline btn--sm">Use Template</button>
+                                </div>
+                                <div class="template-card" data-template="event_organizer">
+                                    <h5>Event Organizer</h5>
+                                    <p>₹2,00,000 cash, 4 employees, event-based revenue</p>
+                                    <button class="btn btn--outline btn--sm">Use Template</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import/Export Section - Collapsible -->
+                    <div class="card profile-section-card">
+                        <div class="profile-section__header" data-section="import-export">
+                            <h4>Import/Export</h4>
+                            <button class="section-toggle" aria-expanded="false">
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                        </div>
+                        <div class="profile-section__content" id="import-export-section">
+                            <div class="profile-actions">
+                                <button id="export-profile-btn" class="btn btn--outline btn--sm">Export Profile</button>
+                                <input type="file" id="import-profile-input" class="hidden" accept=".json">
+                                <button id="import-profile-btn" class="btn btn--outline btn--sm">Import Profile</button>
+                                <button id="reset-default-btn" class="btn btn--secondary btn--sm">Reset to Default</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Actions - Visible only during edit mode -->
+                    <div id="edit-actions-card" class="card profile-section-card hidden">
+                        <div class="card__body">
+                            <div class="profile-edit-actions">
+                                <button id="cancel-edit-btn" class="btn btn--secondary">Cancel</button>
+                                <button id="save-profile-btn" class="btn btn--primary">Save Profile</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Last Updated Info -->
+                    <div class="last-updated">
+                        <small>Last Updated: <span id="last-updated">Now</span></small>
+                    </div>
+                </aside>
+
+                <!-- Main Scenarios Area -->
+                <main class="scenarios-container">
+                    <!-- Scenario Tabs -->
+                    <div class="scenario-tabs">
+                        <button class="tab-button active" data-scenario="hiring">Hiring Impact</button>
+                        <button class="tab-button" data-scenario="marketing">Marketing Investment</button>
+                        <button class="tab-button" data-scenario="pricing">Price Adjustment</button>
+                    </div>
+
+                    <!-- Hiring Scenario -->
+                    <div id="hiring-scenario" class="scenario-panel active">
+                        <div class="scenario-content">
+                            <div class="scenario-controls">
+                                <div class="control-group">
+                                    <label class="form-label">Number of New Hires: <span id="new-hires-value">2</span></label>
+                                    <input type="range" id="new-hires" class="slider" min="0" max="10" value="2" step="1">
+                                </div>
+                                <div class="control-group">
+                                    <label class="form-label">Monthly Cost Per Hire: ₹<span id="cost-per-hire-value">15,000</span></label>
+                                    <input type="range" id="cost-per-hire" class="slider" min="10000" max="50000" value="15000" step="1000">
+                                </div>
+                            </div>
+                            
+                            <div class="results-section">
+                                <div class="chart-container">
+                                    <h4>Burn Rate Impact</h4>
+                                    <div class="chart-wrapper" style="position: relative; height: 300px;">
+                                        <canvas id="hiring-chart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div class="metrics-summary">
+                                    <div class="metric-card">
+                                        <h5>Current Burn Rate</h5>
+                                        <div class="metric-value" id="current-burn">₹50,000/mo</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <h5>New Burn Rate</h5>
+                                        <div class="metric-value" id="new-burn">₹80,000/mo</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <h5>New Runway</h5>
+                                        <div class="metric-value" id="new-runway">7.5 months</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="scenario-summary">
+                                    <h5>Impact Analysis</h5>
+                                    <p id="hiring-summary">Adding 2 new hires at ₹15,000 each will increase monthly burn to ₹80,000, reducing runway from 12 to 7.5 months.</p>
+                                </div>
+                                
+                                <button class="btn btn--primary" onclick="generateReport('hiring')">Generate Report</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Marketing Scenario -->
+                    <div id="marketing-scenario" class="scenario-panel">
+                        <div class="scenario-content">
+                            <div class="scenario-controls">
+                                <div class="control-group">
+                                    <label class="form-label">Additional Marketing Spend: ₹<span id="marketing-spend-value">10,000</span></label>
+                                    <input type="range" id="marketing-spend" class="slider" min="0" max="50000" value="10000" step="1000">
+                                </div>
+                                <div class="control-group">
+                                    <label class="form-label">Expected ROI Multiplier: <span id="roi-multiplier-value">1.5x</span></label>
+                                    <input type="range" id="roi-multiplier" class="slider" min="1.0" max="3.0" value="1.5" step="0.1">
+                                </div>
+                            </div>
+                            
+                            <div class="results-section">
+                                <div class="chart-container">
+                                    <h4>Revenue Projection</h4>
+                                    <div class="chart-wrapper" style="position: relative; height: 300px;">
+                                        <canvas id="marketing-chart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div class="metrics-summary">
+                                    <div class="metric-card">
+                                        <h5>Marketing Investment</h5>
+                                        <div class="metric-value" id="marketing-investment">₹10,000</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <h5>Expected Return</h5>
+                                        <div class="metric-value" id="expected-return">₹15,000</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <h5>Net Gain</h5>
+                                        <div class="metric-value" id="net-gain">₹5,000</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="scenario-summary">
+                                    <h5>Investment Analysis</h5>
+                                    <p id="marketing-summary">Investing ₹10,000 in marketing with a 1.5x ROI will generate ₹15,000 return, resulting in ₹5,000 net gain.</p>
+                                </div>
+                                
+                                <button class="btn btn--primary" onclick="generateReport('marketing')">Generate Report</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Scenario -->
+                    <div id="pricing-scenario" class="scenario-panel">
+                        <div class="scenario-content">
+                            <div class="scenario-controls">
+                                <div class="control-group">
+                                    <label class="form-label">Price Change: <span id="price-change-value">+10%</span></label>
+                                    <input type="range" id="price-change" class="slider" min="-20" max="50" value="10" step="1">
+                                </div>
+                                <div class="control-group">
+                                    <label class="form-label">Demand Elasticity: <span id="demand-elasticity-value">-0.5</span></label>
+                                    <input type="range" id="demand-elasticity" class="slider" min="-2.0" max="0.0" value="-0.5" step="0.1">
+                                </div>
+                            </div>
+                            
+                            <div class="results-section">
+                                <div class="chart-container">
+                                    <h4>Price vs. Demand Impact</h4>
+                                    <div class="chart-wrapper" style="position: relative; height: 300px;">
+                                        <canvas id="pricing-chart"></canvas>
+                                    </div>
+                                </div>
+                                
+                                <div class="metrics-summary">
+                                    <div class="metric-card">
+                                        <h5>New Price</h5>
+                                        <div class="metric-value" id="new-price">₹109</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <h5>Unit Sales Change</h5>
+                                        <div class="metric-value" id="sales-change">-5%</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <h5>Profit Impact</h5>
+                                        <div class="metric-value" id="profit-impact">+4.5%</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="scenario-summary">
+                                    <h5>Pricing Analysis</h5>
+                                    <p id="pricing-summary">Increasing price by 10% to ₹109 will reduce demand by 5% but increase overall profit by 4.5%.</p>
+                                </div>
+                                
+                                <button class="btn btn--primary" onclick="generateReport('pricing')">Generate Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="report-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="report-title">Scenario Report</h3>
+                <button class="modal-close" onclick="closeReport()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="report-content"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--secondary" onclick="closeReport()">Close</button>
+                <button class="btn btn--primary" onclick="exportReport()">Export Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="notification-toast hidden">
+        <div class="notification-content">
+            <span id="notification-message"></span>
+            <button id="notification-close" class="notification-close">&times;</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
